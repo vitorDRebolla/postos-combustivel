@@ -28,7 +28,11 @@ Cada linha é processada em uma transação individual, então uma falha em uma 
 
 ## Exportação
 
-_(a preencher)_
+O CSV exportado segue exatamente as mesmas colunas e ordem do arquivo de importação, garantindo compatibilidade para reimportação sem ajustes manuais.
+
+CNPJ, CPF e CEP são exportados com máscara para legibilidade, mas o importador aceita ambos os formatos. Datas são exportadas no formato `DD/MM/YYYY`. Valores que contêm vírgulas são envolvidos em aspas duplas conforme o padrão CSV (RFC 4180).
+
+A exportação escreve o arquivo diretamente na resposta HTTP linha a linha (`res.write`), sem acumular todos os registros em um array em memória. Isso mantém o consumo de memória constante independente do volume. Para volumes maiores que alguns milhões de registros, a abordagem ideal seria usar um cursor de banco (`pg-query-stream`), mas para a escala esperada neste desafio a abordagem atual é suficiente.
 
 ## Trade-offs
 
