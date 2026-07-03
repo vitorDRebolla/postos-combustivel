@@ -15,7 +15,16 @@ CNPJ e CPF são armazenados sem máscara (apenas dígitos), assim como o CEP. Is
 
 ## Importação, validação e duplicidades
 
-_(a preencher)_
+A importação processa o CSV linha a linha. Cada linha passa pela sanitização antes de qualquer operação no banco:
+
+- CNPJ, CPF e CEP são armazenados sem máscara (apenas dígitos). A validação inclui o algoritmo de dígitos verificadores, não apenas o formato.
+- Datas são aceitas nos formatos `DD/MM/YYYY`, `DD-MM-YYYY` e `YYYY-MM-DD`.
+- Campos com espaços extras são normalizados via `trim`. UF é convertida para maiúsculo.
+- Linhas com campos obrigatórios ausentes ou documentos inválidos são ignoradas e reportadas na resposta da API com o número da linha e o motivo.
+
+**Duplicidades:** postos são identificados pelo CNPJ. Se um posto com o mesmo CNPJ já existe, seus dados são atualizados (upsert). A mesma lógica se aplica ao responsável (identificado pelo CPF) e à bandeira (identificada pelo nome). Combustíveis do posto são sempre substituídos pelos do CSV na reimportação.
+
+Cada linha é processada em uma transação individual, então uma falha em uma linha não compromete as demais.
 
 ## Exportação
 
