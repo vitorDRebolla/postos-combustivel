@@ -70,7 +70,7 @@ function formatDate(v) {
 function escapeCSV(value) {
   if (value === null || value === undefined) return '';
   const str = String(value);
-  if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+  if (str.includes(';') || str.includes('"') || str.includes('\n')) {
     return `"${str.replace(/"/g, '""')}"`;
   }
   return str;
@@ -100,7 +100,7 @@ function rowToCSV(row) {
     numero_pistas: row.numero_pistas,
     observacoes: row.observacoes,
   };
-  return CSV_COLUMNS.map(col => escapeCSV(values[col])).join(',');
+  return CSV_COLUMNS.map(col => escapeCSV(values[col])).join(';');
 }
 
 router.post('/import', upload.single('file'), async (req, res) => {
@@ -110,7 +110,7 @@ router.post('/import', upload.single('file'), async (req, res) => {
 
   try {
     const rows = await new Promise((resolve, reject) => {
-      parse(req.file.buffer, { columns: true, skip_empty_lines: true, trim: true }, (err, records) => {
+      parse(req.file.buffer, { columns: true, skip_empty_lines: true, trim: true, delimiter: ';', bom: true }, (err, records) => {
         if (err) reject(err);
         else resolve(records);
       });
@@ -143,13 +143,22 @@ router.get('/export', async (req, res) => {
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
     res.setHeader('Content-Disposition', 'attachment; filename="postos.csv"');
 
-    res.write(CSV_COLUMNS.join(',') + '\n');
+    res.write(CSV_COLUMNS.join(';') + '\n');
     for (const row of rows) {
       res.write(rowToCSV(row) + '\n');
     }
     res.end();
   } catch (err) {
     res.status(500).json({ error: 'Erro ao exportar postos', detail: err.message });
+  }
+});
+
+router.delete('/', async (req, res) => {
+  try {
+    await pool.query('DELETE FROM postos');
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Erro ao apagar postos', detail: err.message });
   }
 });
 

@@ -11,9 +11,23 @@
         <v-btn color="secondary" prepend-icon="mdi-download" @click="exportCSV" :disabled="postos.length === 0">
           Exportar CSV
         </v-btn>
+        <v-btn color="error" prepend-icon="mdi-delete" @click="confirmDelete = true" :disabled="postos.length === 0">
+          Apagar tudo
+        </v-btn>
         <input ref="fileInput" type="file" accept=".csv" class="d-none" @change="handleFileChange" />
       </v-col>
     </v-row>
+
+    <v-dialog v-model="confirmDelete" max-width="400">
+      <v-card>
+        <v-card-title>Apagar todos os postos?</v-card-title>
+        <v-card-text>Essa ação não pode ser desfeita.</v-card-text>
+        <v-card-actions class="justify-end">
+          <v-btn @click="confirmDelete = false">Cancelar</v-btn>
+          <v-btn color="error" :loading="deleting" @click="deleteAll">Apagar</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
 
     <v-alert v-if="importResult" :type="importResult.skipped > 0 ? 'warning' : 'success'" closable class="mb-4" @click:close="importResult = null">
       <div>
@@ -55,6 +69,8 @@ const API = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 const postos = ref([])
 const loading = ref(false)
 const importing = ref(false)
+const deleting = ref(false)
+const confirmDelete = ref(false)
 const importResult = ref(null)
 const error = ref(null)
 const fileInput = ref(null)
@@ -117,6 +133,21 @@ async function handleFileChange(event) {
     error.value = 'Não foi possível conectar ao servidor.'
   } finally {
     importing.value = false
+  }
+}
+
+async function deleteAll() {
+  deleting.value = true
+  try {
+    const res = await fetch(`${API}/postos`, { method: 'DELETE' })
+    if (!res.ok) throw new Error()
+    confirmDelete.value = false
+    importResult.value = null
+    await fetchPostos()
+  } catch {
+    error.value = 'Não foi possível apagar os postos.'
+  } finally {
+    deleting.value = false
   }
 }
 

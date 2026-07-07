@@ -16,20 +16,29 @@ function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
+function cnpjDigit(digits, weights) {
+  const sum = weights.reduce((acc, w, i) => acc + parseInt(digits[i]) * w, 0);
+  const rem = sum % 11;
+  return rem < 2 ? 0 : 11 - rem;
+}
+
 function validateCNPJ(cnpj) {
   if (cnpj.length !== 14) return false;
   if (/^(\d)\1+$/.test(cnpj)) return false;
-
-  const calc = (cnpj, weights) => {
-    const sum = weights.reduce((acc, w, i) => acc + parseInt(cnpj[i]) * w, 0);
-    const rem = sum % 11;
-    return rem < 2 ? 0 : 11 - rem;
-  };
-
   return (
-    calc(cnpj, [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]) === parseInt(cnpj[12]) &&
-    calc(cnpj, [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]) === parseInt(cnpj[13])
+    cnpjDigit(cnpj, [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]) === parseInt(cnpj[12]) &&
+    cnpjDigit(cnpj, [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]) === parseInt(cnpj[13])
   );
+}
+
+function normalizeScientificCNPJ(raw) {
+  const num = parseFloat(raw.replace(',', '.'));
+  if (isNaN(num) || !isFinite(num)) return null;
+  const base = String(Math.round(num)).substring(0, 12).padEnd(12, '0');
+  if (base.length !== 12 || /\D/.test(base)) return null;
+  const d1 = cnpjDigit(base, [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]);
+  const d2 = cnpjDigit(base + d1, [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]);
+  return base + d1 + d2;
 }
 
 function validateCPF(cpf) {
@@ -75,13 +84,20 @@ function parseDate(value) {
 function sanitize(row) {
   const errors = [];
 
-  const cnpj = stripMask(row.cnpj);
+  const cnpjRaw = trimStr(row.cnpj);
+  let cnpj;
+  if (/[eE]/i.test(cnpjRaw)) {
+    cnpj = normalizeScientificCNPJ(cnpjRaw) || '';
+    if (!cnpj) errors.push('CNPJ inválido');
+  } else {
+    cnpj = stripMask(cnpjRaw);
+    if (!validateCNPJ(cnpj)) errors.push('CNPJ inválido');
+  }
   const cpf = stripMask(row.cpf_responsavel);
   const cep = stripMask(row.cep);
-
-  if (!validateCNPJ(cnpj)) errors.push('CNPJ inválido');
   if (!validateCPF(cpf)) errors.push('CPF inválido');
-  if (cep.length !== 8) errors.push('CEP inválido');
+  const cepNorm = cep.padStart(8, '0');
+  if (cepNorm.length !== 8) errors.push('CEP inválido');
 
   const nome_posto = trimStr(row.nome_posto);
   const bandeira = trimStr(row.bandeira);
@@ -132,7 +148,7 @@ function sanitize(row) {
       bairro,
       municipio,
       uf,
-      cep,
+      cep: cepNorm,
       cpf_responsavel: cpf,
       nome_responsavel,
       email_responsavel: email,
