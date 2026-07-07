@@ -36,8 +36,14 @@ A exportação escreve o arquivo diretamente na resposta HTTP linha a linha (`re
 
 ## Trade-offs
 
-_(a preencher)_
+- **Normalização vs simplicidade:** o schema normalizado adiciona JOINs em toda consulta, mas garante integridade e evita dados inconsistentes. Para um volume pequeno de postos, o custo de performance é irrelevante.
+- **Upsert em vez de rejeitar duplicatas:** optei por atualizar registros existentes ao reimportar, pois faz mais sentido do ponto de vista do produto — o CSV pode ser uma versão atualizada da base. A alternativa seria rejeitar CNPJs já existentes, mas isso tornaria correções de dados mais trabalhosas.
+- **Transação por linha:** cada linha do CSV é importada em sua própria transação. Isso permite que o restante do arquivo seja processado mesmo que uma linha falhe. A alternativa seria uma transação única para o arquivo todo, que oferece consistência total mas descarta tudo caso qualquer linha seja inválida.
+- **Sem ORM:** seguindo o requisito do desafio. O uso direto do `pg` deixa as queries explícitas e fáceis de auditar, mas exige mais código repetitivo para operações como upsert.
 
 ## O que faria diferente com mais tempo
 
-_(a preencher)_
+- **Paginação no backend:** a listagem atual retorna todos os registros de uma vez. Com volumes maiores, seria necessário paginação via `LIMIT`/`OFFSET` ou cursor.
+- **Fila de importação:** para arquivos grandes, processaria o CSV de forma assíncrona com uma fila (ex: BullMQ), retornando um job ID imediatamente e notificando o cliente quando concluído.
+- **Testes automatizados:** cobriria as funções de sanitização e validação de documentos com testes unitários, e o endpoint de importação com testes de integração usando um banco de teste isolado.
+- **Variáveis de ambiente no frontend via proxy:** em vez de expor a URL da API no cliente, configuraria um proxy no Vite para o backend, simplificando o deploy e evitando problemas de CORS em produção.
