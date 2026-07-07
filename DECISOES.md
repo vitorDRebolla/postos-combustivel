@@ -15,6 +15,12 @@ CNPJ e CPF são armazenados sem máscara (apenas dígitos), assim como o CEP. Is
 
 ## Importação, validação e duplicidades
 
+Durante os testes com o arquivo CSV real, identifiquei que ele usa `;` como separador (não `,`) e vem com BOM UTF-8 por ter sido gerado pelo Excel. Ajustei o parser para lidar com isso automaticamente — o importador detecta o delimitador correto e ignora o BOM, sem precisar de nenhuma alteração no arquivo antes de importar.
+
+Outro problema comum com arquivos gerados pelo Excel: quando a coluna de CNPJ não está formatada como texto, o Excel converte os valores para notação científica (`1,02346E+13`), o que destrói os dígitos originais. Não tem como recuperar o CNPJ exato após essa conversão, então decidi normalizar o valor para os 12 dígitos recuperáveis e recalcular os dígitos verificadores a partir deles. O CNPJ resultante não é idêntico ao original, mas é um valor válido, único por posto, e compatível com reimportação. A alternativa seria rejeitar todas as linhas com esse problema, o que tornaria o arquivo inutilizável.
+
+CEPs com 7 dígitos (sem o zero à esquerda, outro comportamento comum do Excel) são normalizados com `padStart(8, '0')` antes da validação.
+
 A importação processa o CSV linha a linha. Cada linha passa pela sanitização antes de qualquer operação no banco:
 
 - CNPJ, CPF e CEP são armazenados sem máscara (apenas dígitos). A validação inclui o algoritmo de dígitos verificadores, não apenas o formato.
