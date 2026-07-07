@@ -93,7 +93,8 @@ npm test
 │       │   └── postos.js  # Import, list, export
 │       └── services/
 │           ├── importer.js
-│           └── sanitizer.js
+│           ├── sanitizer.js
+│           └── sanitizer.test.js
 ├── frontend/
 │   └── src/
 │       ├── App.vue

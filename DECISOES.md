@@ -55,5 +55,5 @@ Adicionei um botão "Apagar tudo" com confirmação na interface. Não estava no
 
 - **Paginação no backend:** a listagem atual retorna todos os registros de uma vez. Com volumes maiores, seria necessário paginação via `LIMIT`/`OFFSET` ou cursor.
 - **Fila de importação:** para arquivos grandes, processaria o CSV de forma assíncrona com uma fila (ex: BullMQ), retornando um job ID imediatamente e notificando o cliente quando concluído.
-- **Testes automatizados:** cobriria as funções de sanitização e validação de documentos com testes unitários, e o endpoint de importação com testes de integração usando um banco de teste isolado.
+- **Testes de integração:** adicionei testes unitários para a camada de sanitização, mas cobriria também o endpoint de importação com testes de integração usando um banco de teste isolado.
 - **Variáveis de ambiente no frontend via proxy:** em vez de expor a URL da API no cliente, configuraria um proxy no Vite para o backend, simplificando o deploy e evitando problemas de CORS em produção.
