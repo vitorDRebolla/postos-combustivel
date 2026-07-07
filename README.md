@@ -57,6 +57,9 @@ A aplicação abre em `http://localhost:5173`.
 1. **Importar:** clique em "Importar CSV" e selecione o arquivo. A resposta indica quantos postos foram importados e quais linhas foram ignoradas e por quê.
 2. **Visualizar:** os postos importados aparecem na tabela automaticamente após a importação.
 3. **Exportar:** clique em "Exportar CSV" para baixar todos os postos no mesmo formato do arquivo de importação.
+4. **Apagar tudo:** clique em "Apagar tudo" para remover todos os postos cadastrados. Uma confirmação é exigida antes da exclusão.
+
+> O arquivo CSV deve usar `;` como separador de colunas. Arquivos exportados pelo Excel com BOM UTF-8 são suportados.
 
 ## Endpoints da API
 
@@ -66,6 +69,7 @@ A aplicação abre em `http://localhost:5173`.
 | POST   | /postos/import   | Importa postos via CSV (multipart/form-data, campo `file`) |
 | GET    | /postos          | Lista todos os postos            |
 | GET    | /postos/export   | Exporta postos em CSV            |
+| DELETE | /postos          | Remove todos os postos           |
 
 ## Estrutura do projeto
 
