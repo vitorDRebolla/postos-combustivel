@@ -31,6 +31,9 @@ function validateCNPJ(cnpj) {
   );
 }
 
+// Excel converts CNPJ columns to scientific notation (e.g. "1,02346E+13") when the
+// column isn't formatted as text. The original digits beyond 6 significant figures are
+// lost, so we recover what we can and recompute valid check digits from those 12 digits.
 function normalizeScientificCNPJ(raw) {
   const num = parseFloat(raw.replace(',', '.'));
   if (isNaN(num) || !isFinite(num)) return null;

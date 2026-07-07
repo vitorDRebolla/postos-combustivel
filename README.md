@@ -61,6 +61,13 @@ A aplicação abre em `http://localhost:5173`.
 
 > O arquivo CSV deve usar `;` como separador de colunas. Arquivos exportados pelo Excel com BOM UTF-8 são suportados.
 
+## Testes
+
+```bash
+cd backend
+npm test
+```
+
 ## Endpoints da API
 
 | Método | Rota             | Descrição                        |
