@@ -47,6 +47,10 @@ A exportação escreve o arquivo diretamente na resposta HTTP linha a linha (`re
 - **Transação por linha:** cada linha do CSV é importada em sua própria transação. Isso permite que o restante do arquivo seja processado mesmo que uma linha falhe. A alternativa seria uma transação única para o arquivo todo, que oferece consistência total mas descarta tudo caso qualquer linha seja inválida.
 - **Sem ORM:** seguindo o requisito do desafio. O uso direto do `pg` deixa as queries explícitas e fáceis de auditar, mas exige mais código repetitivo para operações como upsert.
 
+## Funcionalidade extra: apagar todos os postos
+
+Adicionei um botão "Apagar tudo" com confirmação na interface. Não estava no escopo, mas é útil durante testes e demonstrações para resetar o estado sem precisar acessar o banco diretamente. Em produção, uma operação destrutiva como essa exigiria autenticação — o que está fora do escopo do desafio.
+
 ## O que faria diferente com mais tempo
 
 - **Paginação no backend:** a listagem atual retorna todos os registros de uma vez. Com volumes maiores, seria necessário paginação via `LIMIT`/`OFFSET` ou cursor.
