@@ -1,9 +1,19 @@
+const VALID_UFS = new Set([
+  'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA',
+  'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN',
+  'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO',
+]);
+
 function stripMask(value) {
   return (value || '').replace(/\D/g, '');
 }
 
 function trimStr(value) {
   return (value || '').trim();
+}
+
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
 function validateCNPJ(cnpj) {
@@ -90,7 +100,10 @@ function sanitize(row) {
   if (!municipio) errors.push('municipio é obrigatório');
   if (!status) errors.push('status é obrigatório');
   if (!nome_responsavel) errors.push('nome_responsavel é obrigatório');
-  if (!/^[A-Z]{2}$/.test(uf)) errors.push('UF inválida');
+  if (!VALID_UFS.has(uf)) errors.push('UF inválida');
+
+  const email = trimStr(row.email_responsavel) || null;
+  if (email && !isValidEmail(email)) errors.push('email_responsavel inválido');
 
   const combustiveis = combustiveisRaw
     ? combustiveisRaw.split(',').map(c => c.trim()).filter(Boolean)
@@ -122,7 +135,7 @@ function sanitize(row) {
       cep,
       cpf_responsavel: cpf,
       nome_responsavel,
-      email_responsavel: trimStr(row.email_responsavel) || null,
+      email_responsavel: email,
       cargo_responsavel: trimStr(row.cargo_responsavel) || null,
       combustiveis,
       status,
